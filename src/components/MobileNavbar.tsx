@@ -12,14 +12,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useAuth, SignInButton, SignOutButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
 function MobileNavbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { isSignedIn } = useAuth();
+  const { user } = useUser(); // Add useUser hook
   const { theme, setTheme } = useTheme();
+
+  // Get username - either from Clerk or email fallback
+  const username = user?.username || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0];
 
   return (
     <div className="flex md:hidden items-center space-x-2">
@@ -61,7 +65,8 @@ function MobileNavbar() {
                   </Link>
                 </Button>
                 <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
-                  <Link href="/profile">
+                  {/* Fixed: Use dynamic username instead of hardcoded /profile */}
+                  <Link href={`/profile/${username}`}>
                     <UserIcon className="w-4 h-4" />
                     Profile
                   </Link>

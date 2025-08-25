@@ -1,12 +1,37 @@
-import { BellIcon, HomeIcon, UserIcon } from "lucide-react";
+"use client";
+
+import { BellIcon, HomeIcon, UserIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import ModeToggle from "./ModeToggle";
-import { currentUser } from "@clerk/nextjs/server";
+import { useEffect, useState } from "react";
 
-async function DesktopNavbar() {
-  const user = await currentUser();
+function DesktopNavbar() {
+  const { user, isSignedIn, isLoaded } = useUser();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render until component is mounted and Clerk is loaded
+  if (!isMounted || !isLoaded) {
+    return (
+      <div className="hidden md:flex items-center space-x-4">
+        <ModeToggle />
+        <Button variant="ghost" className="flex items-center gap-2" asChild>
+          <Link href="/">
+            <HomeIcon className="w-4 h-4" />
+            <span className="hidden lg:inline">Home</span>
+          </Link>
+        </Button>
+        <div className="flex items-center">
+          <Loader2Icon className="w-4 h-4 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="hidden md:flex items-center space-x-4">
@@ -19,7 +44,7 @@ async function DesktopNavbar() {
         </Link>
       </Button>
 
-      {user ? (
+      {isSignedIn ? (
         <>
           <Button variant="ghost" className="flex items-center gap-2" asChild>
             <Link href="/notifications">
@@ -47,4 +72,5 @@ async function DesktopNavbar() {
     </div>
   );
 }
+
 export default DesktopNavbar;

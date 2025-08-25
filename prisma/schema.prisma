@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-
+  // Remove the custom output line
 }
 
 datasource db {
@@ -26,19 +26,16 @@ model User {
   website String?
   createdAt DateTime @default(now()) // member since 2020
   updatedAt DateTime @updatedAt
-
   //Relations 
   posts Post[] // One-to-many
   comments Comment[] // One-to-many
   likes Like[] // One-to-many
-
   followers Follows[] @relation("following")
   following Follows[] @relation("follower")
-
   notifications Notification[] @relation("userNotifications")
   notificationsCreated Notification[] @relation("notificationCreator")
-
 }
+
 model Post{
   id  String  @id @default(cuid())
   authorId String
@@ -46,7 +43,6 @@ model Post{
   image String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   //Relations
   author User @relation(fields: [authorId],references: [id], onDelete:Cascade)
   //cascade delete means delete all posts if author is deleted
@@ -54,47 +50,43 @@ model Post{
   likes Like[]
   notifications Notification[]
 }
+
 model Comment{
   id String @id @default(cuid())
   content String
   authorId String
   postId String
   createdAt DateTime @default(now())
-
   //Relations
   author User @relation(fields: [authorId], references:[id],onDelete:Cascade)
   post Post @relation(fields: [postId],references: [id],onDelete:Cascade)
   notificaitons Notification[]
-
   @@index([authorId,postId]) //composite index for faster queries
-
 }
+
 model Like {
   id String @id @default(cuid())
   postId String
   userId String
   createdAt DateTime @default(now())
-
   //Relations
   user User @relation(fields: [userId], references: [id], onDelete:Cascade)
   post Post @relation(fields: [postId], references:[id],onDelete:Cascade)
-
   @@index([userId,postId]) //composite index for faster queries
   @@unique([userId,postId]) //this prevents same user liking post twice
-
 }
+
 model Follows{
   followerId String
   followingId String 
   createdAt DateTime @default(now())
-
   //Relations
   follower User @relation("follower",fields: [ followerId],references: [id],onDelete: Cascade)
   following User @relation("following",fields: [followingId], references: [id], onDelete:Cascade)
-
   @@index([followerId,followingId])
   @@id([followerId,followingId]) // composite primary key prevents duplicate follows
 }
+
 model Notification {
   id String @id @default(cuid())
   userId String
@@ -104,15 +96,14 @@ model Notification {
   postId String?
   commentId String?
   createdAt DateTime @default(now())
-
   //Relations
   user User @relation("userNotifications", fields:[userId], references: [id],onDelete: Cascade)
   creator User @relation("notificationCreator",fields:[creatorId],references: [id],onDelete: Cascade)
   post Post? @relation(fields: [postId],references:[id],onDelete: Cascade)
   comment Comment? @relation(fields:[commentId],references: [id], onDelete: Cascade)
-
   @@index([userId,createdAt])
 }
+
 enum NotificationType {
   LIKE 
   COMMENT 

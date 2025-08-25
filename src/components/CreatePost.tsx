@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser, SignInButton } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { ImageIcon, Loader2Icon, SendIcon, LogInIcon } from "lucide-react";
@@ -12,11 +12,17 @@ import ImageUpload from "./ImageUpload";
 import { Avatar, AvatarImage } from "./ui/avatar";
 
 function CreatePost() {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component only renders on client-side after mounting
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async () => {
     if (!content.trim() && !imageUrl) return;
@@ -28,7 +34,6 @@ function CreatePost() {
         setContent("");
         setImageUrl("");
         setShowImageUpload(false);
-
         toast.success("Post created successfully");
       }
     } catch (error) {
@@ -39,7 +44,20 @@ function CreatePost() {
     }
   };
 
-  // 🚨 If not signed in, show Sign In message instead of post box
+  // Don't render anything until component is mounted and Clerk is loaded
+  if (!isMounted || !isLoaded) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center h-32">
+            <Loader2Icon className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If not signed in, show Sign In message
   if (!isSignedIn) {
     return (
       <Card className="mb-6">
